@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\JournalEntryController;
 use App\Http\Controllers\MoodLogController;
 use App\Http\Controllers\ExerciseController;
+use App\Http\Controllers\AdminDashboardController; // Don't forget to use the new controller
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -20,9 +21,7 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return response()->json(['message' => 'Admin Dashboard']);
-    });
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']); // Route for the admin dashboard
     Route::get('/admin/users', function () {
         return \App\Models\User::all(); // Example admin route to list all users
     });

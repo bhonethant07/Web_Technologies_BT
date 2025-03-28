@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Exercise;
 
 class ExerciseController extends Controller
 {
-    //
+    public function index()
+    {
+        return Exercise::all();
+    }
 }

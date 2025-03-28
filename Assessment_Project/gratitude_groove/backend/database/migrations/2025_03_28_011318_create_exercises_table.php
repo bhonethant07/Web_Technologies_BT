@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('mood_logs', function (Blueprint $table) {
+        Schema::create('exercises', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->enum('mood', ['happy', 'sad', 'neutral', 'excited', 'calm']);
-            $table->timestamp('logged_at')->useCurrent();
+            $table->string('title');
+            $table->text('description');
+            $table->string('audio_url')->nullable();
+            $table->timestamps();
         });
     }
 
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mood_logs');
+        Schema::dropIfExists('exercises');
     }
 };

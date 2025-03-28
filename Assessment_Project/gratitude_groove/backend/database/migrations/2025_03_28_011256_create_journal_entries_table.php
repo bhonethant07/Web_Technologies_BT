@@ -11,10 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('mindfulness_exercises', function (Blueprint $table) {
+        Schema::create('journal_entries', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->text('content');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->text('entry_text');
+            $table->string('mood');
+            $table->string('image_url')->nullable();
             $table->timestamps();
         });
     }
@@ -24,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mindfulness_exercises');
+        Schema::dropIfExists('journal_entries');
     }
 };

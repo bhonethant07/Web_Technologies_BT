@@ -11,9 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('gratitude_prompts', function (Blueprint $table) {
+        Schema::create('mood_logs', function (Blueprint $table) {
             $table->id();
-            $table->text('prompt_text');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('mood');
             $table->timestamps();
         });
     }
@@ -23,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('gratitude_prompts');
+        Schema::dropIfExists('mood_logs');
     }
 };

@@ -17,7 +17,7 @@ class AdminDashboardController extends Controller
         $totalJournalEntries = JournalEntry::count();
         $totalMoodLogs = MoodLog::count();
         $totalExercises = Exercise::count();
-        $totalGratitudePrompts = GratitudePrompt::count(); // Let's add this as well
+        $totalGratitudePrompts = GratitudePrompt::count();
 
         return response()->json([
             'total_users' => $totalUsers,
@@ -34,5 +34,13 @@ class AdminDashboardController extends Controller
     public function listUsers()
     {
         return User::latest()->get();
+    }
+
+    /**
+     * Display the details of a specific user.
+     */
+    public function showUser(User $user)
+    {
+        return response()->json($user);
     }
 }

@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin' => \App\Http\Middleware\AdminMiddleware::class, // Register the AdminMiddleware alias here
         ]);
 
+        // Add the CORS middleware here, before the 'api' group
+        $middleware->prepend(\Illuminate\Http\Middleware\HandleCors::class);
+        $middleware->prepend(\Illuminate\Foundation\Http\Middleware\PreventRequestsDuringMaintenance::class);
+
         $middleware->group('api', [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             'throttle:api',

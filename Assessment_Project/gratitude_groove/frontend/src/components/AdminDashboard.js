@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { getAdminDashboardData } from '../services/api'; // Import the API function
 
 const AdminDashboard = () => {
   const [currentTime, setCurrentTime] = useState('');
   const [activeTab, setActiveTab] = useState('dashboard');
   const [stats, setStats] = useState({
-    users: 1024,
-    exercises: 50,
-    prompts: 200,
-    entries: 5892,
+    users: 0,
+    exercises: 0,
+    prompts: 0,
+    entries: 0,
     moodDistribution: [
       { emoji: '😊', label: 'Happy', percentage: 42, color: '#4ade80' },
       { emoji: '😐', label: 'Neutral', percentage: 18, color: '#a1a1aa' },
@@ -19,20 +20,43 @@ const AdminDashboard = () => {
       { emoji: '😨', label: 'Anxious', percentage: 4, color: '#a78bfa' }
     ]
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Update time every second
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
       setCurrentTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
     };
-    
+
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
 
-  // Card hover animation variants
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getAdminDashboardData();
+        setStats(prevStats => ({
+          ...prevStats,
+          users: data.total_users,
+          exercises: data.total_exercises,
+          prompts: data.total_gratitude_prompts,
+          entries: data.total_journal_entries,
+        }));
+      } catch (err) {
+        setError(err.message || 'Failed to fetch dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
   const cardVariants = {
     hover: {
       y: -5,
@@ -41,6 +65,14 @@ const AdminDashboard = () => {
       transition: { duration: 0.2 }
     }
   };
+
+  if (loading) {
+    return <div className="flex justify-center items-center min-h-screen bg-gray-900 text-white">Loading dashboard data...</div>;
+  }
+
+  if (error) {
+    return <div className="flex justify-center items-center min-h-screen bg-gray-900 text-red-500">Error: {error}</div>;
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-900 text-gray-100">
@@ -87,7 +119,7 @@ const AdminDashboard = () => {
           <>
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <motion.div 
+              <motion.div
                 className="bg-gray-800 border border-gray-700 rounded-lg p-6 flex flex-col items-center"
                 variants={cardVariants}
                 whileHover="hover"
@@ -97,7 +129,7 @@ const AdminDashboard = () => {
                 <div className="text-3xl font-mono font-light">{stats.users.toLocaleString()}</div>
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 className="bg-gray-800 border border-gray-700 rounded-lg p-6 flex flex-col items-center"
                 variants={cardVariants}
                 whileHover="hover"
@@ -107,7 +139,7 @@ const AdminDashboard = () => {
                 <div className="text-3xl font-mono font-light">{stats.exercises.toLocaleString()}</div>
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 className="bg-gray-800 border border-gray-700 rounded-lg p-6 flex flex-col items-center"
                 variants={cardVariants}
                 whileHover="hover"
@@ -117,7 +149,7 @@ const AdminDashboard = () => {
                 <div className="text-3xl font-mono font-light">{stats.prompts.toLocaleString()}</div>
               </motion.div>
 
-              <motion.div 
+              <motion.div
                 className="bg-gray-800 border border-gray-700 rounded-lg p-6 flex flex-col items-center"
                 variants={cardVariants}
                 whileHover="hover"
@@ -128,7 +160,7 @@ const AdminDashboard = () => {
               </motion.div>
             </div>
 
-            {/* Mood Distribution List */}
+            {/* Mood Distribution List (This data is currently static) */}
             <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
               <h2 className="text-xl font-medium mb-4">MOOD DISTRIBUTION</h2>
               <div className="space-y-3">
@@ -137,7 +169,7 @@ const AdminDashboard = () => {
                     <span className="text-2xl w-10">{mood.emoji}</span>
                     <span className="w-24 font-medium">{mood.label}</span>
                     <div className="flex-1 h-6 bg-gray-700 rounded-full overflow-hidden">
-                      <div 
+                      <div
                         className="h-full rounded-full"
                         style={{
                           width: `${mood.percentage}%`,

@@ -25,6 +25,8 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);
     Route::get('/admin/users', [AdminDashboardController::class, 'listUsers']);
     Route::get('/admin/users/{user}', [AdminDashboardController::class, 'showUser']);
+    Route::delete('/admin/users/{user}', [AdminDashboardController::class, 'destroyUser']);
+    
     // Admin Exercise Management Routes
     Route::post('/admin/exercises', [ExerciseController::class, 'store']);
     Route::get('/admin/exercises', [ExerciseController::class, 'adminIndex']);

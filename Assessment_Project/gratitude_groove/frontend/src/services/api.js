@@ -6,19 +6,24 @@ const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
-    // You might include your authentication token here later
+    'Accept': 'application/json',
   },
 });
 
 export const getAdminDashboardData = async () => {
-  try {
-    const response = await api.get('/admin/dashboard');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching admin dashboard data:', error);
-    throw error;
-  }
-};
+    const token = localStorage.getItem('admin_token'); // Retrieve the token from storage
+    if (!token) {
+      throw new Error('Admin token not found. Please log in.');
+    }
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`; // Set the token for this instance
+    try {
+      const response = await api.get('/admin/dashboard');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching admin dashboard data:', error);
+      throw error;
+    }
+  };
 
 export const getAllUsers = async () => {
   try {

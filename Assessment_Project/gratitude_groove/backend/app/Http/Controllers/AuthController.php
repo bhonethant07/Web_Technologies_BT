@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -75,14 +76,33 @@ class AuthController extends Controller
 
     public function adminLogin(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Invalid input', 'errors' => $validator->errors()], 422);
+        }
+
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json(['message' => 'Invalid admin login credentials'], 401);
         }
 
-        $admin = User::where('email', $request['email'])->where('role', User::ROLE_ADMIN)->firstOrFail();
+        $admin = User::where('email', $request['email'])->where('role', User::ROLE_ADMIN)->first();
+        
+        if (!$admin) {
+            Auth::logout();
+            return response()->json(['message' => 'Unauthorized access'], 403);
+        }
+
         $token = $admin->createToken('admin_auth_token')->plainTextToken;
 
-        return response()->json(['access_token' => $token, 'token_type' => 'Bearer', 'admin' => $admin], 200);
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'admin' => $admin
+        ], 200);
     }
 
     public function admin(Request $request)

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import { motion } from 'framer-motion';
 
 const AdminLogin = () => {
@@ -18,15 +18,19 @@ const AdminLogin = () => {
     setIsLoading(true);
     
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/admin/login', {
+      const response = await api.post('/admin/login', {
         email: email,
         password: password,
       });
 
-      const token = response.data.token;
-      localStorage.setItem('admin_token', token);
-      navigate('/admin/dashboard');
+      if (response.data.access_token) {
+        localStorage.setItem('admin_token', response.data.access_token);
+        navigate('/admin/dashboard');
+      } else {
+        throw new Error('No access token received');
+      }
     } catch (err) {
+      console.error('Login error:', err);
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);

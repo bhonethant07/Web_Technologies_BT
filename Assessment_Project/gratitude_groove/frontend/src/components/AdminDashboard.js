@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { getAdminDashboardData } from '../services/api'; // Import the API function
+import { getAdminDashboardData } from '../services/api';
+import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const [currentTime, setCurrentTime] = useState('');
@@ -22,6 +23,7 @@ const AdminDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const updateTime = () => {
@@ -57,6 +59,11 @@ const AdminDashboard = () => {
     fetchDashboardData();
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token');
+    navigate('/admin/login');
+  };
+
   const cardVariants = {
     hover: {
       y: -5,
@@ -76,35 +83,52 @@ const AdminDashboard = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-900 text-gray-100">
-      {/* Sidebar Navigation */}
-      <div className="w-64 bg-gray-800 border-r border-gray-700 p-4">
-        <h2 className="text-xl font-medium mb-6 pl-2">Navigation</h2>
-        <nav className="space-y-2">
-          <button
-            onClick={() => setActiveTab('dashboard')}
-            className={`w-full text-left px-4 py-2 rounded-lg transition ${activeTab === 'dashboard' ? 'bg-blue-600 text-white' : 'hover:bg-gray-700'}`}
+      {/* Sidebar Navigation - now with fixed height and relative positioning */}
+      <div className="w-64 bg-gray-800 border-r border-gray-700 p-4 flex flex-col relative min-h-screen">
+        <div className="flex-1">
+          <h2 className="text-xl font-medium mb-6 pl-2">Navigation</h2>
+          <nav className="space-y-2">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`w-full text-left px-4 py-2 rounded-lg transition ${activeTab === 'dashboard' ? 'bg-blue-600 text-white' : 'hover:bg-gray-700'}`}
+            >
+              Dashboard Overview
+            </button>
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`w-full text-left px-4 py-2 rounded-lg transition ${activeTab === 'users' ? 'bg-blue-600 text-white' : 'hover:bg-gray-700'}`}
+            >
+              User Management
+            </button>
+            <button
+              onClick={() => setActiveTab('exercises')}
+              className={`w-full text-left px-4 py-2 rounded-lg transition ${activeTab === 'exercises' ? 'bg-blue-600 text-white' : 'hover:bg-gray-700'}`}
+            >
+              Exercise Management
+            </button>
+            <button
+              onClick={() => setActiveTab('prompts')}
+              className={`w-full text-left px-4 py-2 rounded-lg transition ${activeTab === 'prompts' ? 'bg-blue-600 text-white' : 'hover:bg-gray-700'}`}
+            >
+              Prompt Management
+            </button>
+          </nav>
+        </div>
+
+        {/* Logout Button - fixed at bottom */}
+        <div className="sticky bottom-0 left-0 right-0 bg-gray-800 p-4 border-t border-gray-700">
+          <motion.button
+            onClick={handleLogout}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full py-2 px-4 bg-red-600 hover:bg-red-700 text-white rounded-lg transition flex items-center justify-center"
           >
-            Dashboard Overview
-          </button>
-          <button
-            onClick={() => setActiveTab('users')}
-            className={`w-full text-left px-4 py-2 rounded-lg transition ${activeTab === 'users' ? 'bg-blue-600 text-white' : 'hover:bg-gray-700'}`}
-          >
-            User Management
-          </button>
-          <button
-            onClick={() => setActiveTab('exercises')}
-            className={`w-full text-left px-4 py-2 rounded-lg transition ${activeTab === 'exercises' ? 'bg-blue-600 text-white' : 'hover:bg-gray-700'}`}
-          >
-            Exercise Management
-          </button>
-          <button
-            onClick={() => setActiveTab('prompts')}
-            className={`w-full text-left px-4 py-2 rounded-lg transition ${activeTab === 'prompts' ? 'bg-blue-600 text-white' : 'hover:bg-gray-700'}`}
-          >
-            Prompt Management
-          </button>
-        </nav>
+            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Logout
+          </motion.button>
+        </div>
       </div>
 
       {/* Main Content Area */}

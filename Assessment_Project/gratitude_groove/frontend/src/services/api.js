@@ -49,5 +49,3 @@ export const getAllPrompts = async () => {
     throw error;
   }
 };
-
-// Add other API functions as needed

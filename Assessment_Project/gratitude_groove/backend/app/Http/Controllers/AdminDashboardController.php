@@ -25,6 +25,7 @@ class AdminDashboardController extends Controller
             'total_mood_logs' => $totalMoodLogs,
             'total_exercises' => $totalExercises,
             'total_gratitude_prompts' => $totalGratitudePrompts,
+            'admin' => $request->user(),
         ]);
     }
 

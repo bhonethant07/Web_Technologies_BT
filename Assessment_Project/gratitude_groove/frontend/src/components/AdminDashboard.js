@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 const AdminDashboard = () => {
   const [currentTime, setCurrentTime] = useState('');
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [adminInfo, setAdminInfo] = useState(null);
   const [stats, setStats] = useState({
     users: 0,
     exercises: 0,
@@ -49,6 +50,7 @@ const AdminDashboard = () => {
           prompts: data.total_gratitude_prompts,
           entries: data.total_journal_entries,
         }));
+        setAdminInfo(data.admin);
       } catch (err) {
         setError(err.message || 'Failed to fetch dashboard data');
       } finally {
@@ -81,13 +83,42 @@ const AdminDashboard = () => {
     return <div className="flex justify-center items-center min-h-screen bg-gray-900 text-red-500">Error: {error}</div>;
   }
 
+  const handleProfileClick = () => {
+    navigate('/admin/edit'); // Navigate to admin edit page
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-900 text-gray-100">
-      {/* Sidebar Navigation - now with fixed height and relative positioning */}
+      {/* Sidebar Navigation */}
       <div className="w-64 bg-gray-800 border-r border-gray-700 p-4 flex flex-col relative min-h-screen">
+        {/* Profile Section */}
+        <div className="flex flex-col items-center mb-6 pb-6 border-b border-gray-700">
+          <motion.button
+            onClick={handleProfileClick}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center mb-3 cursor-pointer"
+          >
+            <svg 
+              className="w-8 h-8 text-gray-400" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" 
+              />
+            </svg>
+          </motion.button>
+          <h3 className="text-lg font-medium text-center">{adminInfo?.name || 'Admin User'}</h3>
+          <p className="text-sm text-gray-400 text-center">Administrator</p>
+        </div>
         <div className="flex-1">
-          <h2 className="text-xl font-medium mb-6 pl-2">Navigation</h2>
-          <nav className="space-y-2">
+          <h2 className="text-sm uppercase tracking-wider text-gray-500 mb-2 pl-2">Navigation</h2>
+          <nav className="space-y-1">
             <button
               onClick={() => setActiveTab('dashboard')}
               className={`w-full text-left px-4 py-2 rounded-lg transition ${activeTab === 'dashboard' ? 'bg-blue-600 text-white' : 'hover:bg-gray-700'}`}

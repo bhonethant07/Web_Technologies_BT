@@ -112,4 +112,50 @@ class AuthController extends Controller
         }
         return response()->json(['message' => 'Unauthorized'], 403);
     }
+
+    public function adminProfile(Request $request)
+{
+    return response()->json($request->user());
+}
+
+public function updateAdminProfile(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users,email,' . $request->user()->id,
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['message' => $validator->errors()], 422);
+    }
+
+    $request->user()->update([
+        'name' => $request->name,
+        'email' => $request->email,
+    ]);
+
+    return response()->json(['message' => 'Profile updated successfully'], 200);
+}
+
+public function updateAdminPassword(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'current_password' => 'required|string',
+        'password' => 'required|string|min:8|confirmed',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['message' => $validator->errors()], 422);
+    }
+
+    if (!Hash::check($request->current_password, $request->user()->password)) {
+        return response()->json(['message' => 'Incorrect current password'], 401);
+    }
+
+    $request->user()->update([
+        'password' => Hash::make($request->password),
+    ]);
+
+    return response()->json(['message' => 'Password updated successfully'], 200);
+}
 }

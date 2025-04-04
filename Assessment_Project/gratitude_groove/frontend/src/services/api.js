@@ -80,13 +80,18 @@ api.interceptors.response.use(
 
 // Function to get admin dashboard data
 export const getAdminDashboardData = async () => {
-    try {
-        const response = await api.get('/admin/dashboard');
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching admin dashboard data:', error);
-        throw error;
+    const token = localStorage.getItem('admin_token');
+    if (!token) {
+      throw new Error('Admin token not found. Please log in.');
     }
-};
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    try {
+      const response = await api.get('/admin/dashboard');
+      return response.data; // Expecting something like { total_users, ..., admin: { name, email } }
+    } catch (error) {
+      console.error('Error fetching admin dashboard data:', error);
+      throw error;
+    }
+  };
 
 export default api;

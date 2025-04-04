@@ -22,7 +22,11 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+    Route::post('/admin/register', [AuthController::class, 'adminRegister']);
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);
+    Route::get('/admin/profile', [AuthController::class, 'adminProfile']);
+    Route::put('/admin/profile', [AuthController::class, 'updateAdminProfile']);
+    Route::patch('/admin/password', [AuthController::class, 'updateAdminPassword']);
     Route::get('/admin/users', [AdminDashboardController::class, 'listUsers']);
     Route::get('/admin/users/{user}', [AdminDashboardController::class, 'showUser']);
     Route::delete('/admin/users/{user}', [AdminDashboardController::class, 'destroyUser']);

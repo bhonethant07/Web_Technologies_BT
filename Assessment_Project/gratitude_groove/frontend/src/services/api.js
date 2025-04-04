@@ -87,9 +87,25 @@ export const getAdminDashboardData = async () => {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     try {
       const response = await api.get('/admin/dashboard');
-      return response.data; // Expecting something like { total_users, ..., admin: { name, email } }
+      return response.data; 
     } catch (error) {
       console.error('Error fetching admin dashboard data:', error);
+      throw error;
+    }
+  };
+
+// Function to get exercises data on admin dashboard
+export const getAdminExercises = async () => {
+    const token = localStorage.getItem('admin_token');
+    if (!token) {
+      throw new Error('Admin token not found. Please log in.');
+    }
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    try {
+      const response = await api.get('/admin/exercises');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching exercises:', error);
       throw error;
     }
   };

@@ -89,7 +89,7 @@ const AdminDashboard = () => {
     setCurrentExercise(exercise);
     setEditTitle(exercise.title);
     setEditDescription(exercise.description);
-    setEditAudioFileName(exercise.audio_file || '');
+    setEditAudioFileName(exercise.audio_url || '');
     setShowEditModal(true);
   };
 
@@ -115,14 +115,21 @@ const AdminDashboard = () => {
       const formData = new FormData();
       formData.append('title', editTitle);
       formData.append('description', editDescription);
+      
+      // If a new audio file is selected, handle the file upload first
+      let audioUrl = currentExercise.audio_url;
       if (editAudioFile) {
-        formData.append('audio_file', editAudioFile);
+        // Here you would typically upload the file to your storage (e.g., S3, server storage)
+        // and get back the URL. For now, we'll simulate this with the filename
+        // TODO: Implement actual file upload functionality
+        audioUrl = `/audio/${editAudioFile.name}`;
       }
       
-      await api.put(`/admin/exercises/${currentExercise.id}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      // Send the update request as JSON
+      await api.put(`/admin/exercises/${currentExercise.id}`, {
+        title: editTitle,
+        description: editDescription,
+        audio_url: audioUrl
       });
       
       // Update the exercises state with the edited exercise
@@ -132,7 +139,7 @@ const AdminDashboard = () => {
               ...exercise, 
               title: editTitle, 
               description: editDescription,
-              audio_file: editAudioFile ? editAudioFile.name : exercise.audio_file
+              audio_url: audioUrl
             } 
           : exercise
       ));
@@ -396,7 +403,7 @@ const AdminDashboard = () => {
                             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                             </svg>
-                            {exercise.audio_file || 'No Audio File'}
+                            {exercise.audio_url || 'No Audio File'}
                           </div>
                           <div className="flex justify-end space-x-2">
                             <button 

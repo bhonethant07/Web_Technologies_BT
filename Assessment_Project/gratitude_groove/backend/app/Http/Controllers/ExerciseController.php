@@ -58,8 +58,8 @@ class ExerciseController extends Controller
     public function update(Request $request, Exercise $exercise)
     {
         $validator = Validator::make($request->all(), [
-            'title' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
             'audio_url' => 'nullable|string|max:255',
         ]);
 
@@ -67,7 +67,8 @@ class ExerciseController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $exercise->update($request->all());
+        // Update the exercise with all the provided fields
+        $exercise->update($request->only(['title', 'description', 'audio_url']));
 
         return response()->json($exercise, 200);
     }

@@ -6,6 +6,8 @@ import UserDashboard from './components/UserDashboard';
 import AdminLogin from './components/AdminLogin';
 import AdminRegister from './components/AdminRegister';
 import AdminEdit from './components/AdminEdit';
+import CreateExercise from './components/CreateExercise';
+
 
 function App() {
   return (
@@ -17,6 +19,7 @@ function App() {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/register" element={<AdminRegister />} />
         <Route path="/admin/edit" element={<AdminEdit />} />
+        <Route path="/admin/exercises/new" element={<CreateExercise />} />
       </Routes>
     </Router>
   );

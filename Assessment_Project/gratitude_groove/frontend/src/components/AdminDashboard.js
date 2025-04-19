@@ -22,9 +22,23 @@ const AdminDashboard = () => {
   const [currentExercise, setCurrentExercise] = useState(null);
   const [editTitle, setEditTitle] = useState('');
   const [editDescription, setEditDescription] = useState('');
-  const [editAudioFile, setEditAudioFile] = useState(null);
   const [editAudioFileName, setEditAudioFileName] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Add state for create prompt modal
+  // State for create prompt modal
+  const [showCreatePromptModal, setShowCreatePromptModal] = useState(false);
+  const [newPromptText, setNewPromptText] = useState('');
+
+  // State for edit prompt modal (reusing showEditModal and creating related states)
+  const [currentPrompt, setCurrentPrompt] = useState(null);
+  const [editPromptText, setEditPromptText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false); // Reusing for both create and edit
+
+  // Function to handle "Add New Prompt" button click
+  const handleCreatePromptClick = () => {
+    setNewPromptText(''); // Clear any previous input
+    setShowCreatePromptModal(true);
+  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -32,47 +46,63 @@ const AdminDashboard = () => {
       setError(null);
       try {
         const data = await getAdminDashboardData();
-        console.log('Dashboard data received:', data); // Debug log
+        console.log('Dashboard data received:', data);
         if (!data) {
           throw new Error('No data received');
         }
         setDashboardData(data);
       } catch (err) {
-        console.error('Dashboard fetch error:', err); // Debug log
+        console.error('Dashboard fetch error:', err);
         setError(err.message || 'Failed to fetch dashboard data');
       } finally {
         setLoading(false);
       }
     };
-  
+
+    const fetchExercises = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await getAdminExercises();
+        setExercises(data);
+      } catch (err) {
+        setError(err.message || 'Failed to fetch exercises');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const fetchPrompts = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await api.get('/admin/prompts');
+        setPrompts(response.data); // Assuming you'll create a `prompts` state
+      } catch (err) {
+        setError(err.message || 'Failed to fetch prompts');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (activeTab === 'dashboard') {
       fetchDashboardData();
+    } else if (activeTab === 'exercises') {
+      fetchExercises();
+    } else if (activeTab === 'prompts') {
+      fetchPrompts();
     }
   }, [activeTab]);
 
-  useEffect(() => {
-    if (activeTab === 'exercises') {
-      const fetchExercises = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-          const data = await getAdminExercises();
-          setExercises(data);
-        } catch (err) {
-          setError(err.message || 'Failed to fetch exercises');
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchExercises();
-    }
-  }, [activeTab]);
+  const [prompts, setPrompts] = useState([]); // Add state for prompts
 
   const handleLogout = () => {
     localStorage.removeItem('admin_token');
     navigate('/admin/login');
   };
 
+  // Function to handle profile click
+  // This function will navigate to the profile edit page
   const handleProfileClick = () => {
     navigate('/admin/edit');
   };
@@ -106,49 +136,97 @@ const AdminDashboard = () => {
     }
   };
 
-  // Function to handle form submission for editing
+  // Function to handle "Edit" button click for prompts
+  const handleEditPromptClick = (prompt) => {
+    setCurrentPrompt(prompt);
+    setEditPromptText(prompt.prompt_text);
+    setShowEditModal(true);
+  };
+
+  // Function to handle form submission for editing exercise
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
+
     try {
-      const formData = new FormData();
-      formData.append('title', editTitle);
-      formData.append('description', editDescription);
-      
-      // If a new audio file is selected, handle the file upload first
-      let audioUrl = currentExercise.audio_url;
-      if (editAudioFile) {
-        // Here you would typically upload the file to your storage (e.g., S3, server storage)
-        // and get back the URL. For now, we'll simulate this with the filename
-        // TODO: Implement actual file upload functionality
-        audioUrl = `/audio/${editAudioFile.name}`;
-      }
-      
-      // Send the update request as JSON
       await api.put(`/admin/exercises/${currentExercise.id}`, {
         title: editTitle,
         description: editDescription,
-        audio_url: audioUrl
+        audio_url: editAudioFileName // Sending the audio URL
       });
-      
+
       // Update the exercises state with the edited exercise
-      setExercises(exercises.map(exercise => 
-        exercise.id === currentExercise.id 
-          ? { 
-              ...exercise, 
-              title: editTitle, 
+      setExercises(exercises.map(exercise =>
+        exercise.id === currentExercise.id
+          ? {
+              ...exercise,
+              title: editTitle,
               description: editDescription,
-              audio_url: audioUrl
-            } 
+              audio_url: editAudioFileName
+            }
           : exercise
       ));
-      
+
       setShowEditModal(false);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to update exercise');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Function to handle form submission for creating a new prompt
+  const handleCreatePromptSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const response = await api.post('/admin/prompts', { prompt_text: newPromptText });
+      setPrompts([...prompts, response.data]); // Add the new prompt to the state
+      setShowCreatePromptModal(false);
+      setNewPromptText('');
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to create prompt');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Function to handle form submission for editing a prompt
+  const handleEditPromptSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const response = await api.put(`/admin/prompts/${currentPrompt.id}`, { prompt_text: editPromptText });
+      setPrompts(prompts.map(prompt =>
+        prompt.id === currentPrompt.id ? response.data : prompt
+      ));
+      setShowEditModal(false);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to update prompt');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Function to handle "Delete" button click for prompts
+  const handleDeletePromptClick = async (promptId) => {
+    if (window.confirm('Are you sure you want to delete this prompt?')) {
+      setIsSubmitting(true); // You can reuse this to show a loading state if desired
+      setError(null);
+
+      try {
+        await api.delete(`/admin/prompts/${promptId}`);
+        // Remove the deleted prompt from the state
+        setPrompts(prompts.filter(prompt => prompt.id !== promptId));
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to delete prompt');
+      } finally {
+        setIsSubmitting(false); // Reset loading state
+      }
     }
   };
 
@@ -224,10 +302,6 @@ const AdminDashboard = () => {
       }
     }
   };
-
-  if (loading) {
-    return <div className="flex justify-center items-center min-h-screen bg-gray-900 text-white">Loading dashboard data...</div>;
-  }
 
   if (error) {
     return <div className="flex justify-center items-center min-h-screen bg-gray-900 text-red-500">Error: {error}</div>;
@@ -399,11 +473,12 @@ const AdminDashboard = () => {
                           <p className="text-gray-300 mb-4 h-20 overflow-hidden">
                             {truncateText(exercise.description, 120)}
                           </p>
-                          <div className="flex items-center text-sm text-gray-400 mb-4">
-                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                            </svg>
-                            {exercise.audio_url || 'No Audio File'}
+                          <div className="mb-4">
+                            {exercise.audio_url ? (
+                              <div dangerouslySetInnerHTML={{ __html: exercise.audio_url }} />
+                            ) : (
+                              <p className="text-gray-400 text-sm">No Audio Embedded</p>
+                            )}
                           </div>
                           <div className="flex justify-end space-x-2">
                             <button 
@@ -429,8 +504,49 @@ const AdminDashboard = () => {
 
             {activeTab === 'prompts' && (
               <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-                <h2 className="text-xl font-medium mb-4">Prompt Management</h2>
-                <p>Prompt management content will go here</p>
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-medium">Prompt Management</h2>
+                  <button
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition"
+                    onClick={handleCreatePromptClick}
+                  >
+                    Add New Prompt
+                  </button>
+                </div>
+
+                {loading ? (
+                  <p>Loading prompts...</p>
+                ) : error ? (
+                  <p className="text-red-500">Error loading prompts: {error}</p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> {/* 2x2 grid */}
+                    {prompts.map((prompt) => (
+                      <motion.div
+                        key={prompt.id}
+                        className="bg-gray-700 rounded-lg overflow-hidden border border-gray-600 hover:border-blue-500 transition-all duration-200 p-4 h-full"
+                        whileHover={{ y: -5 }}
+                      >
+                        <p className="text-gray-300 line-clamp-3 mb-3"> {/* Truncate long text */}
+                          {prompt.prompt_text}
+                        </p>
+                        <div className="flex justify-end space-x-2">
+                          <button
+                            onClick={() => handleEditPromptClick(prompt)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition text-sm"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeletePromptClick(prompt.id)}
+                            className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition text-sm"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -463,28 +579,13 @@ const AdminDashboard = () => {
                 />
               </div>
               <div className="mb-4">
-                <label className="block text-gray-400 text-sm font-medium mb-2">Audio File</label>
-                <div className="flex items-center">
-                  <input 
-                    type="file" 
-                    onChange={(e) => {
-                      setEditAudioFile(e.target.files[0]);
-                      setEditAudioFileName(e.target.files[0]?.name || '');
-                    }} 
-                    className="hidden" 
-                    id="audio-file-input" 
-                    accept="audio/*" 
-                  />
-                  <label 
-                    htmlFor="audio-file-input"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded cursor-pointer"
-                  >
-                    Choose File
-                  </label>
-                  <span className="ml-2 text-gray-400 text-sm truncate max-w-xs">
-                    {editAudioFileName || 'No file chosen'}
-                  </span>
-                </div>
+                <label className="block text-gray-400 text-sm font-medium mb-2">Audio URL</label>
+                <input
+                  type="text"
+                  value={editAudioFileName} // Reusing this state for simplicity
+                  onChange={(e) => setEditAudioFileName(e.target.value)}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 text-white"
+                />
               </div>
               <div className="flex justify-end space-x-2">
                 <button 
@@ -496,6 +597,84 @@ const AdminDashboard = () => {
                 </button>
                 <button 
                   type="submit" 
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Create New Prompt Modal */}
+      {showCreatePromptModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-semibold mb-4">Add New Prompt</h2>
+            <form onSubmit={handleCreatePromptSubmit}>
+              <div className="mb-4">
+                <label className="block text-gray-400 text-sm font-medium mb-2" htmlFor="new-prompt-text">
+                  Prompt Text
+                </label>
+                <textarea
+                  id="new-prompt-text"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 text-white h-32"
+                  value={newPromptText}
+                  onChange={(e) => setNewPromptText(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCreatePromptModal(false)}
+                  className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Saving...' : 'Save Prompt'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Prompt Modal */}
+      {showEditModal && currentPrompt && ( // Ensure currentPrompt is not null
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-semibold mb-4">Edit Prompt</h2>
+            <form onSubmit={handleEditPromptSubmit}>
+              <div className="mb-4">
+                <label className="block text-gray-400 text-sm font-medium mb-2" htmlFor="edit-prompt-text">
+                  Prompt Text
+                </label>
+                <textarea
+                  id="edit-prompt-text"
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 text-white h-32"
+                  value={editPromptText}
+                  onChange={(e) => setEditPromptText(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setShowEditModal(false)}
+                  className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
                   disabled={isSubmitting}
                 >

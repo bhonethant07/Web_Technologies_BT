@@ -8,6 +8,8 @@ use App\Models\JournalEntry;
 use App\Models\MoodLog;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 
 class AdminDashboardController extends Controller
 {
@@ -30,11 +32,17 @@ class AdminDashboardController extends Controller
     }
 
     /**
-     * Display a listing of all users for the admin.
+     * Display a listing of all users for the admin, separated by role.
      */
     public function listUsers()
     {
-        return User::latest()->get();
+        $admins = User::where('role', 'admin')->latest()->get();
+        $normalUsers = User::where('role', 'user')->latest()->get();
+
+        return response()->json([
+            'admins' => $admins,
+            'normalUsers' => $normalUsers,
+        ]);
     }
 
     /**
@@ -43,6 +51,22 @@ class AdminDashboardController extends Controller
     public function showUser(User $user)
     {
         return response()->json($user);
+    }
+
+    /**
+     * Reset the password for another admin user.
+     */
+    public function resetPassword(Request $request, User $user)
+    {
+        if ($user->role !== 'admin') {
+            return response()->json(['message' => 'Cannot reset password for non-admin users.'], 403);
+        }
+
+        $newPassword = 'test@2025';
+        $user->password = Hash::make($newPassword);
+        $user->save();
+
+        return response()->json(['message' => 'Admin password reset successfully to: ' . $newPassword], 200);
     }
 
     /**

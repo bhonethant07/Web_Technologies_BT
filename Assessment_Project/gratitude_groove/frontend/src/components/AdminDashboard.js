@@ -34,6 +34,11 @@ const AdminDashboard = () => {
   const [editPromptText, setEditPromptText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false); // Reusing for both create and edit
 
+  const [prompts, setPrompts] = useState([]); // Add state for prompts
+
+  const [users, setUsers] = useState({ admins: [], normalUsers: [] });
+  const [searchQuery, setSearchQuery] = useState('');
+
   // Function to handle "Add New Prompt" button click
   const handleCreatePromptClick = () => {
     setNewPromptText(''); // Clear any previous input
@@ -85,16 +90,29 @@ const AdminDashboard = () => {
       }
     };
 
+    const fetchUsers = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await api.get('/admin/users');
+        setUsers(response.data);
+      } catch (err) {
+        setError(err.message || 'Failed to fetch users');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     if (activeTab === 'dashboard') {
       fetchDashboardData();
     } else if (activeTab === 'exercises') {
       fetchExercises();
     } else if (activeTab === 'prompts') {
       fetchPrompts();
+    } else if (activeTab === 'users') {
+      fetchUsers();
     }
   }, [activeTab]);
-
-  const [prompts, setPrompts] = useState([]); // Add state for prompts
 
   const handleLogout = () => {
     localStorage.removeItem('admin_token');
@@ -226,6 +244,42 @@ const AdminDashboard = () => {
         setError(err.response?.data?.message || 'Failed to delete prompt');
       } finally {
         setIsSubmitting(false); // Reset loading state
+      }
+    }
+  };
+
+  // Function to handle password reset
+  const handleDeleteUser = async (userId) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      setIsSubmitting(true);
+      setError(null);
+      try {
+        await api.delete(`/admin/users/${userId}`);
+        // Update the users state by filtering out the deleted user
+        setUsers({
+          admins: users.admins.filter(admin => admin.id !== userId),
+          normalUsers: users.normalUsers.filter(user => user.id !== userId),
+        });
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to delete user');
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+  };
+
+  // Function to handle password reset
+  const handleResetPassword = async (adminId) => {
+    if (window.confirm('Are you sure you want to reset the password for this admin user?')) {
+      setIsSubmitting(true);
+      setError(null);
+      try {
+        await api.post(`/admin/users/${adminId}/reset-password`);
+        alert('Admin password reset successfully to: test@2025'); // Simple feedback
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to reset password');
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };
@@ -439,8 +493,100 @@ const AdminDashboard = () => {
 
             {activeTab === 'users' && (
               <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-                <h2 className="text-xl font-medium mb-4">User Management</h2>
-                <p>User management content will go here</p>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-medium">User Management</h2>
+                  <input
+                    type="text"
+                    className="shadow appearance-none border rounded w-1/3 py-2 px-3 text-white bg-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    placeholder="Search users by email..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+
+                {loading ? (
+                  <p>Loading users...</p>
+                ) : error ? (
+                  <p className="text-red-500">Error loading users: {error}</p>
+                ) : (
+                  <>
+                    {/* Admin Users Section */}
+                    <div className="mb-6">
+                      <h3 className="text-lg font-semibold mb-2">Admin Users</h3>
+                      {users.admins
+                        .filter(admin =>
+                          admin.email.toLowerCase().includes(searchQuery.toLowerCase())
+                        ).length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {users.admins
+                            .filter(admin =>
+                              admin.email.toLowerCase().includes(searchQuery.toLowerCase())
+                            )
+                            .map((admin) => (
+                            <div key={admin.id} className="bg-gray-700 rounded-lg p-4 flex flex-col justify-between h-full">
+                              <div>
+                                <p className="text-gray-300">{admin.name}</p>
+                                <p className="text-sm text-gray-400">{admin.email}</p>
+                                <p className="text-xs text-gray-500">Registered: {new Date(admin.created_at).toLocaleDateString()}</p>
+                              </div>
+                              <div className="flex space-x-2 mt-2">
+                                {dashboardData?.admin?.id !== admin.id && (
+                                  <button
+                                    onClick={() => handleResetPassword(admin.id)}
+                                    className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded transition text-sm"
+                                  >
+                                    Reset Password
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => handleDeleteUser(admin.id)}
+                                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition text-sm"
+                                >
+                                  Delete
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-400">No admin users found.</p>
+                      )}
+                    </div>
+
+                    {/* Normal Users Section */}
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Normal Users</h3>
+                      {users.normalUsers
+                        .filter(user =>
+                          user.email.toLowerCase().includes(searchQuery.toLowerCase())
+                        ).length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {users.normalUsers
+                            .filter(user =>
+                              user.email.toLowerCase().includes(searchQuery.toLowerCase())
+                            )
+                            .map((user) => (
+                            <div key={user.id} className="bg-gray-700 rounded-lg p-4 flex flex-col justify-between h-full"> {/* Changed to flex-col */}
+                              <div>
+                                <p className="text-gray-300">{user.name}</p>
+                                <p className="text-sm text-gray-400">{user.email}</p>
+                                <p className="text-xs text-gray-500">Registered: {new Date(user.created_at).toLocaleDateString()}</p>
+                              </div>
+                              <button
+                                onClick={() => handleDeleteUser(user.id)}
+                                className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition text-sm mt-2"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-gray-400">No normal users found.</p>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             )}
 

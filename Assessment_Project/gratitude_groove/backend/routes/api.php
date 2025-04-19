@@ -30,6 +30,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/admin/users', [AdminDashboardController::class, 'listUsers']);
     Route::get('/admin/users/{user}', [AdminDashboardController::class, 'showUser']);
     Route::delete('/admin/users/{user}', [AdminDashboardController::class, 'destroyUser']);
+    Route::post('/admin/users/{user}/reset-password', [AdminDashboardController::class, 'resetPassword']);
     
     // Admin Exercise Management Routes
     Route::post('/admin/exercises', [ExerciseController::class, 'store']);

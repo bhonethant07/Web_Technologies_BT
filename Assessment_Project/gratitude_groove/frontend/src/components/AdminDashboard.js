@@ -621,7 +621,9 @@ const AdminDashboard = () => {
                           </p>
                           <div className="mb-4">
                             {exercise.audio_url ? (
-                              <div dangerouslySetInnerHTML={{ __html: exercise.audio_url }} />
+                              <div className="youtube-audio-wrapper">
+                                <div dangerouslySetInnerHTML={{ __html: exercise.audio_url }} />
+                              </div>
                             ) : (
                               <p className="text-gray-400 text-sm">No Audio Embedded</p>
                             )}

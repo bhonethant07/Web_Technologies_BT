@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.youtube-audio-wrapper {
+    width: 100%; /* Make the wrapper take full width of its container */
+    max-width: 480px; /* Optional: Set a maximum width */
+    overflow: hidden; /* Prevent iframe from overflowing the wrapper */
+  }
+  
+  .youtube-audio-wrapper iframe {
+    width: 100%;
+    height: 100%;
+  }

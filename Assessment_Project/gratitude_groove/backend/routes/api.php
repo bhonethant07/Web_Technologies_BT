@@ -19,6 +19,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/journal', [JournalEntryController::class, 'index']);
     Route::post('/mood', [MoodLogController::class, 'store']);
     Route::get('/exercises', [ExerciseController::class, 'index']);
+    Route::post('/logout', [AuthController::class, 'logout']);
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {

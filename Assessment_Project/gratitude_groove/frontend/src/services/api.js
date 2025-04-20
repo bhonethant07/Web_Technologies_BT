@@ -17,14 +17,14 @@ const api = axios.create({
 // Function to get CSRF token
 export const getCsrfToken = async () => {
     try {
-        const response = await axios.get(SANCTUM_ENDPOINT, { 
+        const response = await axios.get(SANCTUM_ENDPOINT, {
             withCredentials: true,
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
             }
         });
-        
+
         // Get the XSRF-TOKEN cookie
         const xsrfToken = document.cookie
             .split('; ')
@@ -35,7 +35,7 @@ export const getCsrfToken = async () => {
             // Set the X-XSRF-TOKEN header for subsequent requests
             api.defaults.headers.common['X-XSRF-TOKEN'] = decodeURIComponent(xsrfToken);
         }
-        
+
         return response;
     } catch (error) {
         console.error('Error fetching CSRF token:', error);
@@ -43,19 +43,25 @@ export const getCsrfToken = async () => {
     }
 };
 
-// Request interceptor to handle CSRF token
+// Request interceptor to handle CSRF and Auth tokens
 api.interceptors.request.use(async (config) => {
-    // Add auth token if it exists
-    const token = localStorage.getItem('admin_token');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+    // Add admin token if it exists
+    const adminToken = localStorage.getItem('admin_token');
+    if (adminToken) {
+        config.headers.Authorization = `Bearer ${adminToken}`;
+    } else {
+        // Add user token if admin token doesn't exist
+        const userToken = localStorage.getItem('authToken');
+        if (userToken) {
+            config.headers.Authorization = `Bearer ${userToken}`;
+        }
     }
-    
+
     // Ensure we have a CSRF token for non-GET requests
     if (config.method !== 'get') {
         await getCsrfToken();
     }
-    
+
     return config;
 });
 
@@ -78,7 +84,7 @@ api.interceptors.response.use(
     }
 );
 
-// Function to get admin dashboard data
+// Function to get admin dashboard data 
 export const getAdminDashboardData = async () => {
     const token = localStorage.getItem('admin_token');
     if (!token) {
@@ -87,14 +93,14 @@ export const getAdminDashboardData = async () => {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     try {
       const response = await api.get('/admin/dashboard');
-      return response.data; 
+      return response.data;
     } catch (error) {
       console.error('Error fetching admin dashboard data:', error);
       throw error;
     }
   };
 
-// Function to get exercises data on admin dashboard
+// Function to get exercises data on admin dashboard 
 export const getAdminExercises = async () => {
     const token = localStorage.getItem('admin_token');
     if (!token) {

@@ -30,7 +30,7 @@ class User extends Authenticatable
         'favorite_quote',
         'how_gratitude_feels',
         'profile_image',
-        'role', // Make sure 'role' is in the fillable array
+        'role',
     ];
 
     /**

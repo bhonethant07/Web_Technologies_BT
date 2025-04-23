@@ -184,49 +184,4 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'Password updated successfully'], 200);
     }
-
-    public function updateProfile(Request $request)
-    {
-        $user = $request->user();
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'sometimes|string|max:255',
-            'gratitude_goals' => 'nullable|string',
-            'grateful_for' => 'nullable|string',
-            'favorite_quote' => 'nullable|string',
-            'how_gratitude_feels' => 'nullable|string',
-            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        if ($request->has('name')) {
-            $user->name = $request->name;
-        }
-        if ($request->has('gratitude_goals')) {
-            $user->gratitude_goals = $request->gratitude_goals;
-        }
-        if ($request->has('grateful_for')) {
-            $user->grateful_for = $request->grateful_for;
-        }
-        if ($request->has('favorite_quote')) {
-            $user->favorite_quote = $request->favorite_quote;
-        }
-        if ($request->has('how_gratitude_feels')) {
-            $user->how_gratitude_feels = $request->how_gratitude_feels;
-        }
-
-        // Handle profile image upload
-        if ($request->hasFile('profile_image')) {
-            // Store the uploaded image (you might want to use a dedicated storage service)
-            $imagePath = $request->file('profile_image')->store('profile_images', 'public');
-            $user->profile_image = $imagePath;
-        }
-
-        $user->save();
-
-        return response()->json(['message' => 'Profile updated successfully', 'user' => $user], 200);
-    }
 }

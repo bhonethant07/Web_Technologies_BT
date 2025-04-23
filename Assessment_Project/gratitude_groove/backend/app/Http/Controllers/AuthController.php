@@ -140,48 +140,93 @@ class AuthController extends Controller
     }
 
     public function adminProfile(Request $request)
-{
-    return response()->json($request->user());
-}
-
-public function updateAdminProfile(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'name' => 'required|string|max:255',
-        'email' => 'required|string|email|max:255|unique:users,email,' . $request->user()->id,
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json(['message' => $validator->errors()], 422);
+    {
+        return response()->json($request->user());
     }
 
-    $request->user()->update([
-        'name' => $request->name,
-        'email' => $request->email,
-    ]);
+    public function updateAdminProfile(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $request->user()->id,
+        ]);
 
-    return response()->json(['message' => 'Profile updated successfully'], 200);
-}
+        if ($validator->fails()) {
+            return response()->json(['message' => $validator->errors()], 422);
+        }
 
-public function updateAdminPassword(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'current_password' => 'required|string',
-        'password' => 'required|string|min:8|confirmed',
-    ]);
+        $request->user()->update([
+            'name' => $request->name,
+            'email' => $request->email,
+        ]);
 
-    if ($validator->fails()) {
-        return response()->json(['message' => $validator->errors()], 422);
+        return response()->json(['message' => 'Profile updated successfully'], 200);
     }
 
-    if (!Hash::check($request->current_password, $request->user()->password)) {
-        return response()->json(['message' => 'Incorrect current password'], 401);
+    public function updateAdminPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => $validator->errors()], 422);
+        }
+
+        if (!Hash::check($request->current_password, $request->user()->password)) {
+            return response()->json(['message' => 'Incorrect current password'], 401);
+        }
+
+        $request->user()->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return response()->json(['message' => 'Password updated successfully'], 200);
     }
 
-    $request->user()->update([
-        'password' => Hash::make($request->password),
-    ]);
+    public function updateProfile(Request $request)
+    {
+        $user = $request->user();
 
-    return response()->json(['message' => 'Password updated successfully'], 200);
-}
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|string|max:255',
+            'gratitude_goals' => 'nullable|string',
+            'grateful_for' => 'nullable|string',
+            'favorite_quote' => 'nullable|string',
+            'how_gratitude_feels' => 'nullable|string',
+            'profile_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        if ($request->has('name')) {
+            $user->name = $request->name;
+        }
+        if ($request->has('gratitude_goals')) {
+            $user->gratitude_goals = $request->gratitude_goals;
+        }
+        if ($request->has('grateful_for')) {
+            $user->grateful_for = $request->grateful_for;
+        }
+        if ($request->has('favorite_quote')) {
+            $user->favorite_quote = $request->favorite_quote;
+        }
+        if ($request->has('how_gratitude_feels')) {
+            $user->how_gratitude_feels = $request->how_gratitude_feels;
+        }
+
+        // Handle profile image upload
+        if ($request->hasFile('profile_image')) {
+            // Store the uploaded image (you might want to use a dedicated storage service)
+            $imagePath = $request->file('profile_image')->store('profile_images', 'public');
+            $user->profile_image = $imagePath;
+        }
+
+        $user->save();
+
+        return response()->json(['message' => 'Profile updated successfully', 'user' => $user], 200);
+    }
 }

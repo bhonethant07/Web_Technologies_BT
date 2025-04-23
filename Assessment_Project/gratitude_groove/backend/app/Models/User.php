@@ -25,6 +25,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'gratitude_goals',
+        'grateful_for',
+        'favorite_quote',
+        'how_gratitude_feels',
+        'profile_image',
         'role', // Make sure 'role' is in the fillable array
     ];
 

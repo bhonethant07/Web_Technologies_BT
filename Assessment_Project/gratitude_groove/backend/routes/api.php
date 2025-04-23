@@ -15,6 +15,7 @@ Route::post('/admin/login', [AuthController::class, 'adminLogin']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
+    Route::put('/user/profile', [AuthController::class, 'updateProfile']);
     Route::post('/journal', [JournalEntryController::class, 'store']);
     Route::get('/journal', [JournalEntryController::class, 'index']);
     Route::post('/mood', [MoodLogController::class, 'store']);

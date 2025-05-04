@@ -6,6 +6,7 @@ use App\Http\Controllers\MoodLogController;
 use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\GratitudePromptController;
+use App\Http\Controllers\UserProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -15,12 +16,16 @@ Route::post('/admin/login', [AuthController::class, 'adminLogin']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
-    Route::put('/user/profile', [AuthController::class, 'updateProfile']);
     Route::post('/journal', [JournalEntryController::class, 'store']);
     Route::get('/journal', [JournalEntryController::class, 'index']);
     Route::post('/mood', [MoodLogController::class, 'store']);
     Route::get('/exercises', [ExerciseController::class, 'index']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    // User profile routes
+    Route::get('/profile', [UserProfileController::class, 'show']);
+    Route::put('/profile', [UserProfileController::class, 'update']);
+    Route::post('/profile/upload', [UserProfileController::class, 'uploadWithImage']);
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
@@ -33,7 +38,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/admin/users/{user}', [AdminDashboardController::class, 'showUser']);
     Route::delete('/admin/users/{user}', [AdminDashboardController::class, 'destroyUser']);
     Route::post('/admin/users/{user}/reset-password', [AdminDashboardController::class, 'resetPassword']);
-    
+
     // Admin Exercise Management Routes
     Route::post('/admin/exercises', [ExerciseController::class, 'store']);
     Route::get('/admin/exercises', [ExerciseController::class, 'adminIndex']);

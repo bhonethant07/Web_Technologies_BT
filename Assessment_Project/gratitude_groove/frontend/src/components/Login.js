@@ -21,9 +21,17 @@ const Login = () => {
 
     try {
       const response = await api.post('/login', { email, password });
-      const token = response.data.token;
-      login(token);
-      navigate('/dashboard');
+      const { token, user, profile_completed } = response.data;
+
+      // Pass user data and profile completion status to the context
+      login(token, user, profile_completed);
+
+      // Redirect based on profile completion status
+      if (profile_completed) {
+        navigate('/dashboard');
+      } else {
+        navigate('/profile-customization');
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
@@ -38,7 +46,7 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       {/* Glass-morphism inspired card (light theme) */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -53,7 +61,7 @@ const Login = () => {
 
         {/* Error message */}
         {error && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="mb-6 p-3 bg-red-100 border border-red-200 rounded-lg text-red-700 text-sm"

@@ -58,7 +58,11 @@ class AuthController extends Controller
 
         $token = $user->createToken('authToken')->plainTextToken;
 
-        return response()->json(['token' => $token, 'user' => $user], 200);
+        return response()->json([
+            'token' => $token,
+            'user' => $user,
+            'profile_completed' => $user->hasCompletedProfile()
+        ], 200);
     }
 
     /**
@@ -116,7 +120,7 @@ class AuthController extends Controller
         }
 
         $admin = User::where('email', $request['email'])->where('role', User::ROLE_ADMIN)->first();
-        
+
         if (!$admin) {
             Auth::logout();
             return response()->json(['message' => 'Unauthorized access'], 403);

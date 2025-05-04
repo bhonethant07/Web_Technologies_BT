@@ -60,4 +60,16 @@ class User extends Authenticatable
     {
         return $this->role === self::ROLE_ADMIN;
     }
+
+    /**
+     * Check if the user has completed their profile.
+     *
+     * @return bool
+     */
+    public function hasCompletedProfile(): bool
+    {
+        // A profile is considered complete if the user has filled out
+        // at least their gratitude goals and what they're grateful for
+        return !empty($this->gratitude_goals) && !empty($this->grateful_for);
+    }
 }

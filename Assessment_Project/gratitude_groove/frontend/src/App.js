@@ -7,6 +7,7 @@ import HomePage from './components/HomePage';
 import Register from './components/Register';
 import Login from './components/Login';
 import UserDashboard from './components/UserDashboard';
+import ProfileCustomization from './components/ProfileCustomization';
 
 // Admin-side components
 import AdminDashboard from './components/AdminDashboard';
@@ -25,6 +26,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<PrivateRoute><UserDashboard /></PrivateRoute>} />
+          <Route path="/profile-customization" element={<PrivateRoute><ProfileCustomization /></PrivateRoute>} />
 
           {/* Admin Routes */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />

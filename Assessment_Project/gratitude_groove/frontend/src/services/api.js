@@ -84,7 +84,7 @@ api.interceptors.response.use(
     }
 );
 
-// Function to get admin dashboard data 
+// Function to get admin dashboard data
 export const getAdminDashboardData = async () => {
     const token = localStorage.getItem('admin_token');
     if (!token) {
@@ -100,7 +100,7 @@ export const getAdminDashboardData = async () => {
     }
   };
 
-// Function to get exercises data on admin dashboard 
+// Function to get exercises data on admin dashboard
 export const getAdminExercises = async () => {
     const token = localStorage.getItem('admin_token');
     if (!token) {
@@ -115,5 +115,50 @@ export const getAdminExercises = async () => {
       throw error;
     }
   };
+
+// Function to get user profile
+export const getUserProfile = async () => {
+  try {
+    const response = await api.get('/profile');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    throw error;
+  }
+};
+
+// Function to update user profile
+export const updateUserProfile = async (profileData, profileImage = null) => {
+  try {
+    // If we have a file, we need to use FormData
+    if (profileImage instanceof File) {
+      const formData = new FormData();
+
+      // Append all profile data to the form
+      Object.keys(profileData).forEach(key => {
+        formData.append(key, profileData[key]);
+      });
+
+      // Append the image file
+      formData.append('profile_image', profileImage);
+
+      // Make the request with FormData
+      const response = await api.post('/profile/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      return response.data;
+    } else {
+      // Regular JSON request if no file is being uploaded
+      const response = await api.put('/profile', profileData);
+      return response.data;
+    }
+  } catch (error) {
+    console.error('Error updating user profile:', error);
+    throw error;
+  }
+};
 
 export default api;

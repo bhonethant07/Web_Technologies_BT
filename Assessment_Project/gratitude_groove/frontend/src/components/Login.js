@@ -20,8 +20,16 @@ const Login = () => {
     setError(null);
 
     try {
+      // First, get CSRF token
+      await api.get('http://127.0.0.1:8000/sanctum/csrf-cookie');
+
+      // Then attempt login
       const response = await api.post('/login', { email, password });
       const { token, user, profile_completed } = response.data;
+
+      // Set token in localStorage and axios defaults
+      localStorage.setItem('authToken', token);
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       // Pass user data and profile completion status to the context
       login(token, user, profile_completed);
@@ -33,6 +41,7 @@ const Login = () => {
         navigate('/profile-customization');
       }
     } catch (err) {
+      console.error('Login error:', err);
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);

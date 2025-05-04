@@ -53,6 +53,9 @@ export const AuthProvider = ({ children }) => {
     const fetchUserData = async () => {
       if (authToken) {
         try {
+          // Set the Authorization header explicitly for this request
+          api.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
+
           const response = await api.get('/user');
           setUser(response.data);
           setIsAuthenticated(true);
@@ -64,7 +67,12 @@ export const AuthProvider = ({ children }) => {
           console.error('Error fetching user data:', error);
           // If there's an error (like token expired), logout
           if (error.response?.status === 401) {
-            logout();
+            // Clear token and state without making the logout API call
+            setAuthToken(null);
+            localStorage.removeItem('authToken');
+            setIsAuthenticated(false);
+            setUser(null);
+            setProfileCompleted(false);
           }
         }
       }
@@ -72,6 +80,11 @@ export const AuthProvider = ({ children }) => {
 
     if (authToken) {
       fetchUserData();
+    } else {
+      // If no token, ensure user is logged out
+      setIsAuthenticated(false);
+      setUser(null);
+      setProfileCompleted(false);
     }
   }, [authToken]);
 

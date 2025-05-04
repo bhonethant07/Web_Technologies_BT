@@ -45,21 +45,25 @@ export const getCsrfToken = async () => {
 
 // Request interceptor to handle CSRF and Auth tokens
 api.interceptors.request.use(async (config) => {
-    // Add admin token if it exists
+    // Add auth token to every request
+    const userToken = localStorage.getItem('authToken');
     const adminToken = localStorage.getItem('admin_token');
+
+    // Prioritize admin token if it exists
     if (adminToken) {
         config.headers.Authorization = `Bearer ${adminToken}`;
-    } else {
-        // Add user token if admin token doesn't exist
-        const userToken = localStorage.getItem('authToken');
-        if (userToken) {
-            config.headers.Authorization = `Bearer ${userToken}`;
-        }
+    } else if (userToken) {
+        config.headers.Authorization = `Bearer ${userToken}`;
     }
 
-    // Ensure we have a CSRF token for non-GET requests
-    if (config.method !== 'get') {
-        await getCsrfToken();
+    // Get CSRF token for non-GET requests if we don't already have one
+    if (config.method !== 'get' && !document.cookie.includes('XSRF-TOKEN')) {
+        try {
+            await getCsrfToken();
+        } catch (error) {
+            console.error('Error getting CSRF token:', error);
+            // Continue with the request even if CSRF token fetch fails
+        }
     }
 
     return config;
@@ -69,6 +73,7 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
+        // Handle CSRF token expiration
         if (error.response?.status === 419) {
             try {
                 // Get new CSRF token
@@ -80,6 +85,22 @@ api.interceptors.response.use(
                 return Promise.reject(refreshError);
             }
         }
+
+        // Handle authentication errors
+        if (error.response?.status === 401) {
+            // Clear tokens if unauthorized
+            if (error.config.url !== '/login' && error.config.url !== '/logout') {
+                console.log('Authentication error. Clearing tokens.');
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('admin_token');
+
+                // Redirect to login page if not already there
+                if (window.location.pathname !== '/login') {
+                    window.location.href = '/login';
+                }
+            }
+        }
+
         return Promise.reject(error);
     }
 );

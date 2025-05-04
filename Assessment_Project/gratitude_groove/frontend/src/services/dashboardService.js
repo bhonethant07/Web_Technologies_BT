@@ -6,10 +6,25 @@ import api from './api';
  */
 export const getDashboardData = async () => {
   try {
+    // Ensure the auth token is set in the headers
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      throw new Error('No authentication token found');
+    }
+
     const response = await api.get('/dashboard');
     return response.data;
   } catch (error) {
     console.error('Error fetching dashboard data:', error);
+
+    // Handle authentication errors
+    if (error.response?.status === 401) {
+      // Clear token if unauthorized
+      localStorage.removeItem('authToken');
+    }
+
     throw error;
   }
 };

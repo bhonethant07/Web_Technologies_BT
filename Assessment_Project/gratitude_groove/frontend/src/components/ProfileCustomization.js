@@ -5,7 +5,7 @@ import { updateUserProfile, getUserProfile } from '../services/api';
 import { motion } from 'framer-motion';
 
 const ProfileCustomization = () => {
-  const { user, updateProfileStatus, updateUser } = useContext(AuthContext);
+  const { updateProfileStatus, updateUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 

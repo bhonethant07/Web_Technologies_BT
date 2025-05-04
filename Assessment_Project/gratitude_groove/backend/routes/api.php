@@ -7,6 +7,7 @@ use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\GratitudePromptController;
 use App\Http\Controllers\UserProfileController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -26,6 +27,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [UserProfileController::class, 'show']);
     Route::put('/profile', [UserProfileController::class, 'update']);
     Route::post('/profile/upload', [UserProfileController::class, 'uploadWithImage']);
+
+    // Dashboard routes
+    Route::get('/dashboard', [DashboardController::class, 'index']);
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {

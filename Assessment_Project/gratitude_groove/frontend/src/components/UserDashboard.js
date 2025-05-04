@@ -150,9 +150,9 @@ const UserDashboard = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-7 space-y-6">
             <DashboardHeader user={dashboardData?.user} stats={dashboardData?.stats} />
 
             <QuickActions
@@ -170,7 +170,7 @@ const UserDashboard = () => {
           </div>
 
           {/* Right Column */}
-          <div className="space-y-6">
+          <div className="lg:col-span-5 space-y-6">
             <DailyPrompt
               prompt={dashboardData?.daily_prompt}
               onUsePrompt={handleUsePrompt}

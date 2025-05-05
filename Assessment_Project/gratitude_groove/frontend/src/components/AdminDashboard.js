@@ -3,11 +3,11 @@ import { motion } from 'framer-motion';
 import { getAdminDashboardData, getAdminExercises } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { Pie } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from 'chart.js';
 
 // Register the chart components
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
 const AdminDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
@@ -16,7 +16,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [exercises, setExercises] = useState([]);
   const navigate = useNavigate();
-  
+
   // Add state for edit modal
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentExercise, setCurrentExercise] = useState(null);
@@ -295,7 +295,10 @@ const AdminDashboard = () => {
 
   // Prepare chart data
   const prepareMoodChartData = () => {
+    console.log('Dashboard data for chart:', dashboardData);
+
     if (!dashboardData || !dashboardData.stats || !dashboardData.stats.moodDistribution) {
+      console.log('No mood distribution data available');
       return {
         labels: ['No Data'],
         datasets: [{
@@ -307,9 +310,14 @@ const AdminDashboard = () => {
     }
 
     const moodDistribution = dashboardData.stats.moodDistribution;
+    console.log('Mood distribution data:', moodDistribution);
+
     const labels = Object.keys(moodDistribution);
     const data = Object.values(moodDistribution);
-    
+
+    console.log('Chart labels:', labels);
+    console.log('Chart data:', data);
+
     // Color mapping for different moods
     const backgroundColors = {
       'Happy': '#4ade80', // green
@@ -337,22 +345,46 @@ const AdminDashboard = () => {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    cutout: '50%', // Makes the doughnut chart have a moderate hole
+    radius: '90%', // Makes the chart slightly larger
     plugins: {
+      title: {
+        display: false
+      },
       legend: {
         position: 'right',
+        align: 'center',
         labels: {
           color: '#fff',
           font: {
-            size: 12
-          }
+            size: 14,
+            weight: 'bold'
+          },
+          padding: 20,
+          usePointStyle: true,
+          pointStyle: 'circle'
         }
       },
       tooltip: {
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
         titleColor: '#fff',
         bodyColor: '#fff',
         borderColor: '#3b82f6',
-        borderWidth: 1
+        borderWidth: 1,
+        padding: 12,
+        displayColors: true,
+        boxWidth: 10,
+        boxHeight: 10,
+        usePointStyle: true,
+        callbacks: {
+          label: function(context) {
+            const label = context.label || '';
+            const value = context.raw || 0;
+            const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+            const percentage = Math.round((value / total) * 100);
+            return `${label}: ${value} (${percentage}%)`;
+          }
+        }
       }
     }
   };
@@ -367,13 +399,13 @@ const AdminDashboard = () => {
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
           <div className="flex space-x-4">
-            <button 
+            <button
               onClick={handleProfileClick}
               className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition"
             >
               Edit Profile
             </button>
-            <button 
+            <button
               onClick={handleLogout}
               className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition"
             >
@@ -428,7 +460,7 @@ const AdminDashboard = () => {
             {activeTab === 'dashboard' && (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                  <motion.div 
+                  <motion.div
                     className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg p-6 shadow-lg"
                     whileHover="hover"
                     variants={cardVariants}
@@ -436,7 +468,7 @@ const AdminDashboard = () => {
                     <h3 className="text-lg font-medium mb-2">Total Users</h3>
                     <p className="text-3xl font-bold">{dashboardData?.total_users || 0}</p>
                   </motion.div>
-                  <motion.div 
+                  <motion.div
                     className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg p-6 shadow-lg"
                     whileHover="hover"
                     variants={cardVariants}
@@ -444,7 +476,7 @@ const AdminDashboard = () => {
                     <h3 className="text-lg font-medium mb-2">Total Exercises</h3>
                     <p className="text-3xl font-bold">{dashboardData?.total_exercises || 0}</p>
                   </motion.div>
-                  <motion.div 
+                  <motion.div
                     className="bg-gradient-to-br from-green-600 to-green-800 rounded-lg p-6 shadow-lg"
                     whileHover="hover"
                     variants={cardVariants}
@@ -452,7 +484,7 @@ const AdminDashboard = () => {
                     <h3 className="text-lg font-medium mb-2">Total Prompts</h3>
                     <p className="text-3xl font-bold">{dashboardData?.total_gratitude_prompts || 0}</p>
                   </motion.div>
-                  <motion.div 
+                  <motion.div
                     className="bg-gradient-to-br from-yellow-500 to-yellow-700 rounded-lg p-6 shadow-lg"
                     whileHover="hover"
                     variants={cardVariants}
@@ -462,28 +494,22 @@ const AdminDashboard = () => {
                   </motion.div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                  {/* Mood Distribution Chart */}
+                {/* Mood Distribution Chart - Full Width */}
+                <div className="mb-8">
                   <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-lg">
-                    <h3 className="text-xl font-medium mb-4">Mood Distribution</h3>
-                    <div className="h-64">
-                      <Pie data={prepareMoodChartData()} options={chartOptions} />
-                    </div>
-                  </div>
-                  
-                  {/* Recent Activity or another chart could go here */}
-                  <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-lg">
-                    <h3 className="text-xl font-medium mb-4">Recent Activity</h3>
-                    <div className="space-y-3">
-                      {dashboardData?.recentActivity?.length > 0 ? (
-                        dashboardData.recentActivity.map((activity, index) => (
-                          <div key={index} className="bg-gray-700 rounded-lg p-3">
-                            <p className="text-sm">{activity.description}</p>
-                            <p className="text-xs text-gray-400">{new Date(activity.timestamp).toLocaleString()}</p>
-                          </div>
-                        ))
+                    <h3 className="text-xl font-medium mb-4">Overall Mood Distribution</h3>
+                    <div className="h-80">
+                      {loading ? (
+                        <div className="flex items-center justify-center h-full">
+                          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                        </div>
+                      ) : dashboardData?.stats?.moodDistribution &&
+                         Object.keys(dashboardData.stats.moodDistribution).length > 0 ? (
+                        <Doughnut data={prepareMoodChartData()} options={chartOptions} />
                       ) : (
-                        <p className="text-gray-400">No recent activity</p>
+                        <div className="flex items-center justify-center h-full">
+                          <p className="text-gray-400 text-lg">No mood data available yet. Users need to log their moods first.</p>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -594,14 +620,14 @@ const AdminDashboard = () => {
               <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
                 <div className="flex justify-between items-center mb-6">
                   <h2 className="text-xl font-medium">Exercise Management</h2>
-                  <button 
+                  <button
                     className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition"
                     onClick={() => navigate('/admin/exercises/new')}
                   >
                     Add New Exercise
                   </button>
                 </div>
-                
+
                 {loading ? (
                   <p>Loading exercises...</p>
                 ) : error ? (
@@ -609,7 +635,7 @@ const AdminDashboard = () => {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {exercises.map((exercise) => (
-                      <motion.div 
+                      <motion.div
                         key={exercise.id}
                         className="bg-gray-700 rounded-lg overflow-hidden border border-gray-600 hover:border-blue-500 transition-all duration-200"
                         whileHover={{ y: -5 }}
@@ -629,13 +655,13 @@ const AdminDashboard = () => {
                             )}
                           </div>
                           <div className="flex justify-end space-x-2">
-                            <button 
+                            <button
                               onClick={() => handleEditClick(exercise)}
                               className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition"
                             >
                               Edit
                             </button>
-                            <button 
+                            <button
                               onClick={() => handleDeleteClick(exercise.id)}
                               className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded transition"
                             >
@@ -709,21 +735,21 @@ const AdminDashboard = () => {
             <form onSubmit={handleEditSubmit}>
               <div className="mb-4">
                 <label className="block text-gray-400 text-sm font-medium mb-2">Title</label>
-                <input 
-                  type="text" 
-                  value={editTitle} 
-                  onChange={(e) => setEditTitle(e.target.value)} 
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 text-white" 
-                  required 
+                <input
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 text-white"
+                  required
                 />
               </div>
               <div className="mb-4">
                 <label className="block text-gray-400 text-sm font-medium mb-2">Description</label>
-                <textarea 
-                  value={editDescription} 
-                  onChange={(e) => setEditDescription(e.target.value)} 
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 text-white h-32" 
-                  required 
+                <textarea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 px-3 text-white h-32"
+                  required
                 />
               </div>
               <div className="mb-4">
@@ -736,15 +762,15 @@ const AdminDashboard = () => {
                 />
               </div>
               <div className="flex justify-end space-x-2">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => setShowEditModal(false)}
                   className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded"
                 >
                   Cancel
                 </button>
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
                   disabled={isSubmitting}
                 >

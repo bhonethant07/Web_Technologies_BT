@@ -21,6 +21,9 @@ class AdminDashboardController extends Controller
         $totalExercises = Exercise::count();
         $totalGratitudePrompts = GratitudePrompt::count();
 
+        // Calculate mood distribution
+        $moodDistribution = $this->calculateMoodDistribution();
+
         return response()->json([
             'total_users' => $totalUsers,
             'total_journal_entries' => $totalJournalEntries,
@@ -28,6 +31,9 @@ class AdminDashboardController extends Controller
             'total_exercises' => $totalExercises,
             'total_gratitude_prompts' => $totalGratitudePrompts,
             'admin' => $request->user(),
+            'stats' => [
+                'moodDistribution' => $moodDistribution
+            ]
         ]);
     }
 
@@ -77,5 +83,50 @@ class AdminDashboardController extends Controller
         $user->delete();
 
         return response()->json(['message' => 'User deleted successfully'], 204);
+    }
+
+    /**
+     * Calculate the distribution of moods across all mood logs.
+     *
+     * @return array
+     */
+    private function calculateMoodDistribution()
+    {
+        // Get all mood logs - both from MoodLog and JournalEntry
+        $moodLogs = MoodLog::all();
+        $journalEntries = JournalEntry::whereNotNull('mood')->get();
+
+        // Initialize the distribution array
+        $distribution = [];
+
+        // Count occurrences of each mood from MoodLog
+        foreach ($moodLogs as $log) {
+            $mood = $log->mood;
+            if (!isset($distribution[$mood])) {
+                $distribution[$mood] = 0;
+            }
+            $distribution[$mood]++;
+        }
+
+        // Count occurrences of each mood from JournalEntry
+        foreach ($journalEntries as $entry) {
+            $mood = $entry->mood;
+            if (!isset($distribution[$mood])) {
+                $distribution[$mood] = 0;
+            }
+            $distribution[$mood]++;
+        }
+
+        // Sort by count (descending)
+        arsort($distribution);
+
+        // If no data, add a placeholder
+        if (empty($distribution)) {
+            $distribution = [
+                'No Data' => 1
+            ];
+        }
+
+        return $distribution;
     }
 }

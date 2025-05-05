@@ -32,7 +32,7 @@ class ExerciseController extends Controller
         $validator = Validator::make($request->all(), [
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'audio_url' => 'nullable|text',
+            'audio_url' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {

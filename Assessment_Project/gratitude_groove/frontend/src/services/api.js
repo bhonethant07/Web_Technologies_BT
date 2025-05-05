@@ -49,11 +49,15 @@ api.interceptors.request.use(async (config) => {
     const userToken = localStorage.getItem('authToken');
     const adminToken = localStorage.getItem('admin_token');
 
-    // Prioritize admin token if it exists
-    if (adminToken) {
+    // Use the appropriate token based on the URL
+    if (config.url.startsWith('/admin') && adminToken) {
+        // Use admin token for admin routes
         config.headers.Authorization = `Bearer ${adminToken}`;
+        console.log('Using admin token for request:', config.url);
     } else if (userToken) {
+        // Use user token for non-admin routes
         config.headers.Authorization = `Bearer ${userToken}`;
+        console.log('Using user token for request:', config.url);
     }
 
     // Get CSRF token for non-GET requests if we don't already have one
@@ -111,7 +115,7 @@ export const getAdminDashboardData = async () => {
     if (!token) {
       throw new Error('Admin token not found. Please log in.');
     }
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    // No need to set the token here, the interceptor will handle it
     try {
       const response = await api.get('/admin/dashboard');
       return response.data;
@@ -127,7 +131,7 @@ export const getAdminExercises = async () => {
     if (!token) {
       throw new Error('Admin token not found. Please log in.');
     }
-    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    // No need to set the token here, the interceptor will handle it
     try {
       const response = await api.get('/admin/exercises');
       return response.data;

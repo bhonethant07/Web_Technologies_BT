@@ -8,6 +8,19 @@ import Register from './components/Register';
 import Login from './components/Login';
 import UserDashboard from './components/UserDashboard';
 import ProfileCustomization from './components/ProfileCustomization';
+import UserProfile from './components/UserProfile';
+
+// Journal components
+import CreateJournalEntry from './components/journal/CreateJournalEntry';
+import JournalEntryList from './components/journal/JournalEntryList';
+import JournalEntryDetail from './components/journal/JournalEntryDetail';
+
+// Mood components
+import LogMood from './components/mood/LogMood';
+
+// Exercise components
+import ExerciseList from './components/exercises/ExerciseList';
+import ExerciseDetail from './components/exercises/ExerciseDetail';
 
 // Admin-side components
 import AdminDashboard from './components/AdminDashboard';
@@ -27,6 +40,19 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<PrivateRoute><UserDashboard /></PrivateRoute>} />
           <Route path="/profile-customization" element={<PrivateRoute><ProfileCustomization /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute><UserProfile /></PrivateRoute>} />
+
+          {/* Journal Routes */}
+          <Route path="/journal" element={<PrivateRoute><JournalEntryList /></PrivateRoute>} />
+          <Route path="/journal/new" element={<PrivateRoute><CreateJournalEntry /></PrivateRoute>} />
+          <Route path="/journal/:id" element={<PrivateRoute><JournalEntryDetail /></PrivateRoute>} />
+
+          {/* Mood Routes */}
+          <Route path="/mood/log" element={<PrivateRoute><LogMood /></PrivateRoute>} />
+
+          {/* Exercise Routes */}
+          <Route path="/exercises" element={<PrivateRoute><ExerciseList /></PrivateRoute>} />
+          <Route path="/exercises/:id" element={<PrivateRoute><ExerciseDetail /></PrivateRoute>} />
 
           {/* Admin Routes */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />

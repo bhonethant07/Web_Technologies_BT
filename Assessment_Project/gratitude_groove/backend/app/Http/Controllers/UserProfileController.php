@@ -18,8 +18,14 @@ class UserProfileController extends Controller
     public function update(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'gratitude_goals' => 'required|string',
-            'grateful_for' => 'required|string',
+            'name' => 'sometimes|required|string|max:255',
+            'email' => 'sometimes|required|email|max:255',
+            'password' => 'nullable|string|min:8|confirmed',
+            'bio' => 'nullable|string',
+            'location' => 'nullable|string|max:255',
+            'interests' => 'nullable|string',
+            'gratitude_goals' => 'nullable|string',
+            'grateful_for' => 'nullable|string',
             'favorite_quote' => 'nullable|string',
             'how_gratitude_feels' => 'nullable|string',
             'profile_image' => 'nullable|image|max:2048', // Accept image files up to 2MB
@@ -30,12 +36,33 @@ class UserProfileController extends Controller
         }
 
         $user = $request->user();
-        $profileData = [
-            'gratitude_goals' => $request->gratitude_goals,
-            'grateful_for' => $request->grateful_for,
-            'favorite_quote' => $request->favorite_quote,
-            'how_gratitude_feels' => $request->how_gratitude_feels,
+        $profileData = [];
+
+        // Basic user information
+        if ($request->has('name')) {
+            $profileData['name'] = $request->name;
+        }
+
+        if ($request->has('email')) {
+            $profileData['email'] = $request->email;
+        }
+
+        // Password update
+        if ($request->filled('password')) {
+            $profileData['password'] = bcrypt($request->password);
+        }
+
+        // Additional profile fields
+        $additionalFields = [
+            'bio', 'location', 'interests', 'gratitude_goals',
+            'grateful_for', 'favorite_quote', 'how_gratitude_feels'
         ];
+
+        foreach ($additionalFields as $field) {
+            if ($request->has($field)) {
+                $profileData[$field] = $request->$field;
+            }
+        }
 
         // Handle profile image upload
         if ($request->hasFile('profile_image')) {
@@ -57,11 +84,16 @@ class UserProfileController extends Controller
 
         $user->update($profileData);
 
+        // Add profile image URL directly to user data
+        $userData = $user->toArray();
+        $imageUrl = $user->profile_image ? url('storage/' . $user->profile_image) : null;
+        $userData['profile_image_url'] = $imageUrl;
+
         return response()->json([
             'message' => 'Profile updated successfully',
-            'user' => $user,
+            'user' => $userData,
             'profile_completed' => $user->hasCompletedProfile(),
-            'image_url' => $user->profile_image ? Storage::url($user->profile_image) : null
+            'image_url' => $imageUrl
         ]);
     }
 
@@ -75,10 +107,15 @@ class UserProfileController extends Controller
     {
         $user = $request->user();
 
+        // Add profile image URL directly to user data
+        $userData = $user->toArray();
+        $imageUrl = $user->profile_image ? url('storage/' . $user->profile_image) : null;
+        $userData['profile_image_url'] = $imageUrl;
+
         return response()->json([
-            'user' => $user,
+            'user' => $userData,
             'profile_completed' => $user->hasCompletedProfile(),
-            'image_url' => $user->profile_image ? Storage::url($user->profile_image) : null
+            'image_url' => $imageUrl
         ]);
     }
 
@@ -92,8 +129,14 @@ class UserProfileController extends Controller
     public function uploadWithImage(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'gratitude_goals' => 'required|string',
-            'grateful_for' => 'required|string',
+            'name' => 'sometimes|required|string|max:255',
+            'email' => 'sometimes|required|email|max:255',
+            'password' => 'nullable|string|min:8|confirmed',
+            'bio' => 'nullable|string',
+            'location' => 'nullable|string|max:255',
+            'interests' => 'nullable|string',
+            'gratitude_goals' => 'nullable|string',
+            'grateful_for' => 'nullable|string',
             'favorite_quote' => 'nullable|string',
             'how_gratitude_feels' => 'nullable|string',
             'profile_image' => 'required|image|max:2048', // Require image file
@@ -104,12 +147,33 @@ class UserProfileController extends Controller
         }
 
         $user = $request->user();
-        $profileData = [
-            'gratitude_goals' => $request->gratitude_goals,
-            'grateful_for' => $request->grateful_for,
-            'favorite_quote' => $request->favorite_quote,
-            'how_gratitude_feels' => $request->how_gratitude_feels,
+        $profileData = [];
+
+        // Basic user information
+        if ($request->has('name')) {
+            $profileData['name'] = $request->name;
+        }
+
+        if ($request->has('email')) {
+            $profileData['email'] = $request->email;
+        }
+
+        // Password update
+        if ($request->filled('password')) {
+            $profileData['password'] = bcrypt($request->password);
+        }
+
+        // Additional profile fields
+        $additionalFields = [
+            'bio', 'location', 'interests', 'gratitude_goals',
+            'grateful_for', 'favorite_quote', 'how_gratitude_feels'
         ];
+
+        foreach ($additionalFields as $field) {
+            if ($request->has($field)) {
+                $profileData[$field] = $request->$field;
+            }
+        }
 
         // Handle profile image upload
         if ($request->hasFile('profile_image')) {
@@ -125,11 +189,16 @@ class UserProfileController extends Controller
 
         $user->update($profileData);
 
+        // Add profile image URL directly to user data
+        $userData = $user->toArray();
+        $imageUrl = $user->profile_image ? url('storage/' . $user->profile_image) : null;
+        $userData['profile_image_url'] = $imageUrl;
+
         return response()->json([
             'message' => 'Profile updated successfully',
-            'user' => $user,
+            'user' => $userData,
             'profile_completed' => $user->hasCompletedProfile(),
-            'image_url' => $user->profile_image ? Storage::url($user->profile_image) : null
+            'image_url' => $imageUrl
         ]);
     }
 }

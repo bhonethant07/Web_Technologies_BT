@@ -17,10 +17,17 @@ Route::post('/admin/login', [AuthController::class, 'adminLogin']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
+
+    // Journal Entry Routes
     Route::post('/journal', [JournalEntryController::class, 'store']);
     Route::get('/journal', [JournalEntryController::class, 'index']);
+    Route::get('/journal/{journal_entry}', [JournalEntryController::class, 'show']);
+    Route::put('/journal/{journal_entry}', [JournalEntryController::class, 'update']);
+    Route::delete('/journal/{journal_entry}', [JournalEntryController::class, 'destroy']);
+
     Route::post('/mood', [MoodLogController::class, 'store']);
     Route::get('/exercises', [ExerciseController::class, 'index']);
+    Route::get('/exercises/{exercise}', [ExerciseController::class, 'show']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // User profile routes

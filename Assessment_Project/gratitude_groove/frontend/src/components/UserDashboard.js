@@ -8,7 +8,7 @@ import DashboardHeader from './dashboard/DashboardHeader';
 import QuickActions from './dashboard/QuickActions';
 import DailyPrompt from './dashboard/DailyPrompt';
 import RecentEntries from './dashboard/RecentEntries';
-import MoodChart from './dashboard/MoodChart';
+import MoodCalendar from './dashboard/MoodCalendar';
 import ExercisesPreview from './dashboard/ExercisesPreview';
 
 const UserDashboard = () => {
@@ -24,6 +24,14 @@ const UserDashboard = () => {
       try {
         setLoading(true);
         const data = await getDashboardData();
+        console.log('Dashboard data:', data);
+
+        // If we have user data with a profile image, log it
+        if (data?.user?.profile_image) {
+          console.log('User profile image:', data.user.profile_image);
+          console.log('User profile image URL:', data.user.profile_image_url);
+        }
+
         setDashboardData(data);
         setError(null);
       } catch (err) {
@@ -44,50 +52,49 @@ const UserDashboard = () => {
   // Handler functions for dashboard actions
   const handleNewEntry = () => {
     // Navigate to new journal entry page
-    console.log('Create new journal entry');
-    // navigate('/journal/new');
+    navigate('/journal/new');
   };
 
   const handleLogMood = () => {
-    // Navigate to mood logging page
-    console.log('Log mood');
-    // navigate('/mood/log');
+    // Check if user has already logged a mood today
+    if (dashboardData?.today?.has_mood_log) {
+      // Show a notification or alert that mood has already been logged
+      alert('You have already logged your mood for today. You can log your mood again tomorrow.');
+    } else {
+      // Navigate to mood logging page
+      navigate('/mood/log');
+    }
   };
 
   const handleTryExercise = () => {
     // Navigate to exercises page
-    console.log('Try exercise');
-    // navigate('/exercises');
+    navigate('/exercises');
   };
 
   const handleUsePrompt = (prompt) => {
     // Navigate to new journal entry with prompt
-    console.log('Use prompt:', prompt);
-    // navigate('/journal/new', { state: { prompt } });
+    navigate('/journal/new', { state: { prompt } });
   };
 
   const handleViewAllEntries = () => {
     // Navigate to all journal entries
-    console.log('View all entries');
-    // navigate('/journal');
+    navigate('/journal');
   };
 
   const handleViewEntry = (entry) => {
     // Navigate to specific journal entry
-    console.log('View entry:', entry);
-    // navigate(`/journal/${entry.id}`);
+    navigate(`/journal/${entry.id}`);
   };
 
   const handleViewAllExercises = () => {
     // Navigate to all exercises
-    console.log('View all exercises');
-    // navigate('/exercises');
+    navigate('/exercises');
   };
 
   const handleViewExercise = (exercise) => {
     // Navigate to specific exercise
-    console.log('View exercise:', exercise);
-    // navigate(`/exercises/${exercise.id}`);
+    console.log('Dashboard - Clicked exercise:', exercise);
+    navigate(`/exercises/${exercise.id}`);
   };
 
   if (loading) {
@@ -137,12 +144,35 @@ const UserDashboard = () => {
             <div className="flex items-center">
               <div className="relative">
                 <button
-                  onClick={handleLogout}
-                  className="ml-4 px-3 py-1 text-sm text-red-600 hover:text-red-800 font-medium"
+                  onClick={() => navigate('/profile')}
+                  className="flex items-center focus:outline-none"
                 >
-                  Logout
+                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200 hover:border-blue-500 transition-colors bg-gray-100 flex items-center justify-center">
+                    {dashboardData?.user?.profile_image ? (
+                      <img
+                        src={dashboardData.user.profile_image_url || `/storage/${dashboardData.user.profile_image}`}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.log('Dashboard image failed to load:', dashboardData.user.profile_image);
+                          e.target.onerror = null;
+                          e.target.src = '/default-avatar.svg';
+                        }}
+                      />
+                    ) : (
+                      <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </div>
                 </button>
               </div>
+              <button
+                onClick={handleLogout}
+                className="ml-4 px-3 py-1 text-sm text-red-600 hover:text-red-800 font-medium"
+              >
+                Logout
+              </button>
             </div>
           </div>
         </div>
@@ -150,11 +180,13 @@ const UserDashboard = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Dashboard Header - Full Width */}
+        <DashboardHeader user={dashboardData?.user} stats={dashboardData?.stats} className="mb-6" />
+
+        {/* Main Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column */}
           <div className="lg:col-span-7 space-y-6">
-            <DashboardHeader user={dashboardData?.user} stats={dashboardData?.stats} />
-
             <QuickActions
               today={dashboardData?.today}
               onNewEntry={handleNewEntry}
@@ -167,6 +199,13 @@ const UserDashboard = () => {
               onViewAll={handleViewAllEntries}
               onViewEntry={handleViewEntry}
             />
+
+            {/* Moved Exercises to Left Column */}
+            <ExercisesPreview
+              exercises={dashboardData?.exercises}
+              onViewAll={handleViewAllExercises}
+              onViewExercise={handleViewExercise}
+            />
           </div>
 
           {/* Right Column */}
@@ -176,13 +215,7 @@ const UserDashboard = () => {
               onUsePrompt={handleUsePrompt}
             />
 
-            <MoodChart moods={dashboardData?.recent_moods} />
-
-            <ExercisesPreview
-              exercises={dashboardData?.exercises}
-              onViewAll={handleViewAllExercises}
-              onViewExercise={handleViewExercise}
-            />
+            <MoodCalendar moods={dashboardData?.recent_moods} />
           </div>
         </div>
       </main>

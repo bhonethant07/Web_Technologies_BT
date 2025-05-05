@@ -1,0 +1,28 @@
+/* Calendar specific styles */
+.aspect-square {
+  aspect-ratio: 1 / 1;
+  min-height: 2.5rem;
+}
+
+/* Hover effects for calendar days */
+.calendar-day:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease-in-out;
+  z-index: 10;
+}
+
+/* Animation for mood emojis */
+.mood-emoji {
+  transition: transform 0.3s ease;
+}
+
+.mood-emoji:hover {
+  transform: scale(1.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .aspect-square {
+    min-height: 2rem;
+  }
+}

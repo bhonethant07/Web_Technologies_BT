@@ -53,9 +53,7 @@ export const AuthProvider = ({ children }) => {
     const fetchUserData = async () => {
       if (authToken) {
         try {
-          // Set the Authorization header explicitly for this request
-          api.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
-
+          // The interceptor will handle adding the token to the request
           const response = await api.get('/user');
           setUser(response.data);
           setIsAuthenticated(true);

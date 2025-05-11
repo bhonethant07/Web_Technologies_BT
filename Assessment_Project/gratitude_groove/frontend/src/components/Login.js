@@ -21,7 +21,7 @@ const Login = () => {
 
     try {
       // First, get CSRF token
-      await api.get('https://mi-linux.wlv.ac.uk/~2532943/gratitude_grove_api/sanctum/csrf-cookie');
+      await api.get('http://127.0.0.1:8000/sanctum/csrf-cookie');
 
       // Then attempt login
       const response = await api.post('/login', { email, password });

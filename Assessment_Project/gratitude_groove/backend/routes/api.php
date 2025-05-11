@@ -9,11 +9,16 @@ use App\Http\Controllers\GratitudePromptController;
 use App\Http\Controllers\UserProfileController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/admin/register', [AuthController::class, 'adminRegister']);
 Route::post('/admin/login', [AuthController::class, 'adminLogin']);
+
+// Add a public route for exercises
+Route::get('/public/exercises', [ExerciseController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);

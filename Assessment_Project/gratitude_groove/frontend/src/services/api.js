@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'https://mi-linux.wlv.ac.uk/~2532943/gratitude_grove_api/api';
-const SANCTUM_ENDPOINT = 'https://mi-linux.wlv.ac.uk/~2532943/gratitude_grove_api/sanctum/csrf-cookie';
+const API_BASE_URL = 'http://127.0.0.1:8000/api';
+const SANCTUM_ENDPOINT = 'http://127.0.0.1:8000/sanctum/csrf-cookie';
 
 // Create axios instance with default config
 const api = axios.create({

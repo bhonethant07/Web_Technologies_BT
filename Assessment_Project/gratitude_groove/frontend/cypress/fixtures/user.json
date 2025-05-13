@@ -1,0 +1,11 @@
+{
+  "id": 1,
+  "name": "Test User",
+  "email": "test@example.com",
+  "role": "user",
+  "profile_image_url": null,
+  "gratitude_goals": "Practice mindfulness daily",
+  "grateful_for": "Family, friends, and good health",
+  "favorite_quote": "Gratitude turns what we have into enough",
+  "how_gratitude_feels": "Peaceful and content"
+}

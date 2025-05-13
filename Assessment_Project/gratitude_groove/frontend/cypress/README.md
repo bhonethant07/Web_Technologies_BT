@@ -5,44 +5,49 @@ This directory contains Cypress component tests for the Gratitude Grove frontend
 ## Test Files
 
 1. **Login Component Tests** (`1-login.cy.jsx`)
-   - Tests user login functionality
-   - Validates form inputs
-   - Tests password visibility toggle
-   - Tests successful login and error handling
-   - Tests redirection based on profile completion status
+   - **Basic rendering**: Verifies that all form elements are rendered correctly
+   - **Password visibility toggle**: Tests that clicking the eye icon toggles password visibility
+   - **Input value updates**: Verifies that typing in fields updates their values
+   - **Remember me checkbox**: Tests that the checkbox can be toggled
+   - **Navigation links**: Verifies that links point to the correct pages
+   - **Form validation**: Tests that HTML5 validation prevents empty form submission
 
 2. **Registration Component Tests** (`2-registration.cy.jsx`)
-   - Tests user registration functionality
-   - Validates form inputs
-   - Tests password confirmation matching
-   - Tests successful registration and error handling
+   - **Basic rendering**: Verifies that all form elements are rendered correctly
+   - **Password visibility toggle**: Tests that clicking the eye icon toggles password visibility
+   - **Input value updates**: Verifies that typing in fields updates their values
+   - **Form validation**: Tests that HTML5 validation prevents empty form submission
+   - **Password matching**: Tests that an error is shown when passwords don't match
+   - **Navigation links**: Verifies that links point to the correct pages
 
 3. **Journal Entry Component Tests** (`3-journal-entry.cy.jsx`)
-   - Tests creating new journal entries
-   - Tests mood selection
-   - Tests form validation
-   - Tests image upload functionality
-   - Tests successful submission and error handling
+   - **Basic rendering**: Verifies that all form elements are rendered correctly
+   - **Date display**: Tests that the current date is displayed
+   - **Mood selection**: Tests that moods can be selected
+   - **Text input**: Verifies that typing in the textarea updates its value
+   - **Form validation**: Tests that an error is shown when submitting an empty entry
+   - **Navigation**: Tests that the cancel button is present
+   - **Image upload**: Tests that the image upload button works
 
 4. **Mood Logging Component Tests** (`4-mood-logging.cy.jsx`)
-   - Tests mood logging functionality
-   - Tests mood selection
-   - Tests form validation
-   - Tests once-per-day limitation handling
-   - Tests successful submission and error handling
+   - **Basic rendering**: Verifies that all form elements are rendered correctly
+   - **Date display**: Tests that the current date is displayed
+   - **Mood options**: Tests that all mood options are displayed
+   - **Mood selection**: Tests that moods can be selected and the submit button is enabled
+   - **Text input**: Verifies that typing in the note textarea updates its value
+   - **Navigation**: Tests that the cancel button is present
+   - **Form validation**: Tests that the submit button is disabled until a mood is selected
 
 5. **Profile Customization Component Tests** (`5-profile-customization.cy.jsx`)
-   - Tests profile customization functionality
-   - Tests form validation
-   - Tests profile image upload
-   - Tests loading existing profile data
-   - Tests successful submission and error handling
+   - **Basic rendering**: Verifies that all form elements are rendered correctly
+   - **Form input**: Tests that typing in fields updates their values
+   - **Form validation**: Tests that errors are shown when required fields are empty
+   - **Navigation**: Tests that the skip button is present
+   - **Image upload**: Tests that the image upload button works
+   - **Submit button**: Tests that the submit button has the correct text
 
 6. **Dashboard Component Tests** (`6-dashboard.cy.jsx`)
-   - Tests dashboard component rendering
-   - Tests displaying user stats, journal entries, and exercises
-   - Tests quick action buttons
-   - Tests loading and error states
+   - **Basic rendering**: Verifies that the component renders without crashing
 
 ## Running the Tests
 
